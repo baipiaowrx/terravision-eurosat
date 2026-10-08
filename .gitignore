@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 训练产物（体积大，不入库）
+*.pth
+*.npy
+*.pt
+*.onnx
+features/
+W-stage2/
+
+# 数据集（请按 README 自行下载）
+data/
+eurosat/
+EuroSAT/
+
+# Node / Electron
+node_modules/
+dist/
+out/
+npm-debug.log*
+yarn-error.log*
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

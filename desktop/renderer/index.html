@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src *; img-src * data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';">
+  <title>Terravision - 遥感图像多标签分类系统</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ==================== 侧边栏 ==================== -->
+  <aside class="sidebar">
+    <div class="logo-area">
+      <div class="logo-icon">
+        <svg viewBox="0 0 256 256" width="44" height="44">
+          <defs>
+            <linearGradient id="logoGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#409cff"/>
+              <stop offset="100%" style="stop-color:#6bb5ff"/>
+            </linearGradient>
+          </defs>
+          <circle cx="128" cy="128" r="110" fill="#111827" stroke="url(#logoGrad1)" stroke-width="6"/>
+          <ellipse cx="128" cy="128" rx="60" ry="60" fill="none" stroke="url(#logoGrad1)" stroke-width="4"/>
+          <ellipse cx="128" cy="128" rx="60" ry="30" fill="none" stroke="#6bb5ff" stroke-width="2" opacity="0.5"/>
+          <ellipse cx="128" cy="128" rx="30" ry="60" fill="none" stroke="#6bb5ff" stroke-width="2" opacity="0.5"/>
+          <g transform="translate(170, 70) rotate(45)">
+            <rect x="-6" y="-2" width="12" height="4" fill="url(#logoGrad1)" rx="1"/>
+            <rect x="-14" y="-1" width="8" height="2" fill="#6bb5ff" opacity="0.7"/>
+            <rect x="6" y="-1" width="8" height="2" fill="#6bb5ff" opacity="0.7"/>
+          </g>
+          <circle cx="100" cy="100" r="3" fill="#4ade80" opacity="0.8"/>
+          <circle cx="155" cy="105" r="3" fill="#4ade80" opacity="0.8"/>
+          <circle cx="128" cy="128" r="4" fill="#ff9f0a"/>
+        </svg>
+      </div>
+      <h2>Terravision</h2>
+      <div class="subtitle">遥感图像多标签分类系统</div>
+    </div>
+    <nav class="nav-list">
+      <div class="nav-item active" data-tab="home">
+        <span class="icon">🏠</span> 首页概览
+      </div>
+      <div class="nav-item" data-tab="predict">
+        <span class="icon">🔍</span> 单图预测
+      </div>
+      <div class="nav-item" data-tab="batch">
+        <span class="icon">📦</span> 批量预测
+      </div>
+      <div class="nav-item" data-tab="stats">
+        <span class="icon">📊</span> 模型对比
+      </div>
+      <div class="nav-item" data-tab="models">
+        <span class="icon">🤖</span> 模型管理
+      </div>
+      <div class="nav-item" data-tab="settings">
+        <span class="icon">⚙️</span> 设置
+      </div>
+    </nav>
+    <div class="status-bar">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">检查中...</span>
+    </div>
+  </aside>
+
+  <!-- ==================== 主内容区 ==================== -->
+  <div class="main-content">
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+      <label for="global-model-select">当前模型:</label>
+      <select id="global-model-select" class="model-select">
+        <option value="resnet50">ResNet-50</option>
+        <option value="cnn">Custom CNN</option>
+        <option value="svm">SVM</option>
+        <option value="rf">Random Forest</option>
+        <option value="xgb">XGBoost</option>
+        <option value="early_fusion">Early Fusion</option>
+        <option value="late_fusion">Late Fusion</option>
+      </select>
+      <span class="spacer"></span>
+      <span style="color:var(--text-secondary);font-size:11px;">Terravision v1.0 | W</span>
+    </div>
+
+    <!-- ===== 标签页：首页概览 ===== -->
+    <div class="tab-content active" id="tab-home">
+      <div class="home-hero">
+        <div class="hero-title">
+          <h1>Terravision</h1>
+          <p class="hero-desc">基于 EuroSAT 数据集的遥感图像多标签分类系统，集成传统机器学习与深度学习模型</p>
+        </div>
+      </div>
+      
+      <div class="home-grid">
+        <!-- 系统状态卡片 -->
+        <div class="home-card">
+          <div class="card-header">
+            <span class="card-icon">📡</span>
+            <h3>系统状态</h3>
+          </div>
+          <div class="card-body">
+            <div class="status-item">
+              <span class="status-label">后端服务</span>
+              <span class="status-value" id="home-backend-status">检测中...</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">可用模型</span>
+              <span class="status-value" id="home-model-count">-</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">数据集规模</span>
+              <span class="status-value">27,000 张</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">标签数量</span>
+              <span class="status-value">17 个</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最佳模型卡片 -->
+        <div class="home-card">
+          <div class="card-header">
+            <span class="card-icon">🏆</span>
+            <h3>最佳模型</h3>
+          </div>
+          <div class="card-body">
+            <div class="best-model" id="home-best-model">
+              <div class="model-name">ResNet-50</div>
+              <div class="model-score">
+                <span class="score-label">Macro F1</span>
+                <span class="score-value">-</span>
+              </div>
+              <div class="model-score">
+                <span class="score-label">mAP</span>
+                <span class="score-value">-</span>
+              </div>
+            </div>
+            <p class="card-note">等待后端连接后显示实际数据</p>
+          </div>
+        </div>
+
+        <!-- 快速入口卡片 -->
+        <div class="home-card">
+          <div class="card-header">
+            <span class="card-icon">⚡</span>
+            <h3>快速入口</h3>
+          </div>
+          <div class="card-body">
+            <div class="quick-actions">
+              <button class="quick-btn" onclick="switchTab('predict')">
+                <span class="quick-icon">🔍</span>
+                <span class="quick-text">单图预测</span>
+              </button>
+              <button class="quick-btn" onclick="switchTab('batch')">
+                <span class="quick-icon">📦</span>
+                <span class="quick-text">批量处理</span>
+              </button>
+              <button class="quick-btn" onclick="switchTab('stats')">
+                <span class="quick-icon">📊</span>
+                <span class="quick-text">模型对比</span>
+              </button>
+              <button class="quick-btn" onclick="switchTab('settings')">
+                <span class="quick-icon">⚙️</span>
+                <span class="quick-text">系统设置</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模型性能概览 -->
+        <div class="home-card wide">
+          <div class="card-header">
+            <span class="card-icon">📈</span>
+            <h3>模型性能概览</h3>
+          </div>
+          <div class="card-body">
+            <div id="home-stats-chart" class="mini-chart"></div>
+            <p class="card-note" id="home-stats-note">等待后端连接后加载图表</p>
+          </div>
+        </div>
+
+        <!-- 项目信息 -->
+        <div class="home-card">
+          <div class="card-header">
+            <span class="card-icon">📋</span>
+            <h3>项目信息</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-item">
+              <span class="info-label">数据集</span>
+              <span class="info-value">EuroSAT</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">图像尺寸</span>
+              <span class="info-value">64×64 RGB</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">主标签</span>
+              <span class="info-value">10 类</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">辅助标签</span>
+              <span class="info-value">7 类</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 团队分工 -->
+        <div class="home-card">
+          <div class="card-header">
+            <span class="card-icon">👥</span>
+            <h3>团队分工</h3>
+          </div>
+          <div class="card-body">
+            <div class="team-list">
+              <div class="team-item"><span class="team-role">W</span><span class="team-task">深度学习模型 + 桌面应用</span></div>
+              <div class="team-item"><span class="team-role">L</span><span class="team-task">传统ML模型 + 后端API</span></div>
+              <div class="team-item"><span class="team-role">H</span><span class="team-task">网站前端开发</span></div>
+              <div class="team-item"><span class="team-role">R</span><span class="team-task">特征工程 + 小程序</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 标签页：单图预测 ===== -->
+    <div class="tab-content" id="tab-predict">
+      <div class="panel-row">
+        <!-- 左侧：图片区 -->
+        <div class="panel half" id="predict-image-panel">
+          <div class="image-stage" id="predict-stage">
+            <div class="drop-zone" id="predict-drop-zone">
+              <div class="upload-circle">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <p class="drop-title">拖拽或粘贴遥感图像到此处</p>
+              <p class="drop-subtitle">支持 JPG / PNG / TIF 格式，64×64 最佳</p>
+              <button class="btn btn-outline" id="predict-browse-btn">浏览文件</button>
+            </div>
+            <div class="image-viewer" id="predict-viewer" style="display:none;">
+              <div class="viewer-toolbar">
+                <span class="viewer-filename" id="viewer-filename"></span>
+                <button class="btn-icon" id="viewer-change-btn" title="更换图片">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+                </button>
+              </div>
+              <div class="viewer-image-wrap">
+                <img id="viewer-img" src="" alt="预览" />
+              </div>
+              <div class="viewer-info">
+                <span id="viewer-size"></span>
+                <span id="viewer-dims"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 右侧：结果区 -->
+        <div class="panel half result-panel" id="predict-result">
+          <div class="result-placeholder">
+            <div class="placeholder-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <p>选择图像后点击"开始预测"查看结果</p>
+            <p class="sub">支持多标签分类，可识别 17 种地理特征</p>
+          </div>
+        </div>
+      </div>
+      <!-- 控制栏 -->
+      <div class="control-bar">
+        <div class="control-group">
+          <label>模型</label>
+          <select id="predict-model-select" class="model-select">
+            <option value="resnet50">ResNet-50</option>
+            <option value="cnn">Custom CNN</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>阈值 <span id="threshold-badge">0.50</span></label>
+          <input type="range" id="threshold-slider" min="0.1" max="0.9" step="0.05" value="0.5">
+        </div>
+        <div class="control-actions">
+          <button class="btn btn-primary btn-lg" id="predict-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            开始预测
+          </button>
+          <button class="btn btn-secondary" id="explain-btn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            GradCAM
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 标签页：批量预测 ===== -->
+    <div class="tab-content" id="tab-batch">
+      <div class="batch-controls">
+        <button class="btn btn-primary" id="batch-select-btn">选择文件夹</button>
+        <button class="btn btn-secondary" id="batch-clear-btn">清空</button>
+        <label style="color:var(--text-secondary);font-size:13px;">模型:</label>
+        <select id="batch-model-select" class="model-select">
+          <option value="resnet50">ResNet-50</option>
+        </select>
+        <button class="btn btn-primary" id="batch-run-btn">开始批量预测</button>
+        <button class="btn btn-secondary" id="batch-export-btn" style="display:none;">导出 CSV</button>
+        <span id="batch-count" style="color:var(--text-secondary);font-size:13px;">0</span> 张
+      </div>
+      <div id="batch-progress"><div class="spinner"></div> 批量预测中，请稍候...</div>
+      <div class="batch-preview-grid" id="batch-preview">
+        <p class="placeholder-text">点击上方按钮选择图像文件夹</p>
+      </div>
+      <div id="batch-results" style="flex:1;overflow-y:auto;"></div>
+    </div>
+
+    <!-- ===== 标签页：模型对比统计 ===== -->
+    <div class="tab-content" id="tab-stats">
+      <div id="stats-chart">
+        <p class="placeholder-text">请先确保后端服务已启动</p>
+      </div>
+    </div>
+
+    <!-- ===== 标签页：模型管理 ===== -->
+    <div class="tab-content" id="tab-models">
+      <div class="models-grid" id="models-list">
+        <p class="placeholder-text">请先确保后端服务已启动</p>
+      </div>
+    </div>
+
+    <!-- ===== 标签页：设置 ===== -->
+    <div class="tab-content" id="tab-settings">
+      <div class="setting-card">
+        <h3>界面主题</h3>
+        <p class="desc">选择你喜欢的配色方案，设置即时生效。</p>
+        <div class="theme-grid">
+          <div class="theme-option active" data-theme-value="dark" onclick="setTheme('dark')">
+            <div class="theme-preview preview-dark"><div class="tp-side"></div><div class="tp-main"></div></div>
+            <div class="theme-name">深邃星空</div>
+          </div>
+          <div class="theme-option" data-theme-value="light" onclick="setTheme('light')">
+            <div class="theme-preview preview-light"><div class="tp-side"></div><div class="tp-main"></div></div>
+            <div class="theme-name">极简白</div>
+          </div>
+          <div class="theme-option" data-theme-value="forest" onclick="setTheme('forest')">
+            <div class="theme-preview preview-forest"><div class="tp-side"></div><div class="tp-main"></div></div>
+            <div class="theme-name">自然森林</div>
+          </div>
+          <div class="theme-option" data-theme-value="sunset" onclick="setTheme('sunset')">
+            <div class="theme-preview preview-sunset"><div class="tp-side"></div><div class="tp-main"></div></div>
+            <div class="theme-name">暖阳琥珀</div>
+          </div>
+        </div>
+      </div>
+      <div class="setting-card">
+        <h3>API 后端地址</h3>
+        <p class="desc">设置 FastAPI 后端的连接地址。L 启动后端后请填写 L 的局域网 IP。</p>
+        <div class="setting-row">
+          <input type="text" id="api-url-input" placeholder="http://192.168.x.x:8000">
+          <button class="btn btn-primary" id="save-api-url">保存</button>
+        </div>
+      </div>
+      <div class="setting-card">
+        <h3>关于</h3>
+        <p class="desc">
+          <strong>Terravision</strong> - 遥感图像多标签分类桌面应用<br>
+          基于 EuroSAT 数据集，支持 10 个主标签 + 7 个辅助标签的多标签分类<br>
+          集成 SVM / RandomForest / XGBoost / CNN / ResNet-50 / 融合模型<br>
+          开发: W | 后端: L | 前端: H | 小程序: R
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
