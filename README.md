@@ -8,6 +8,16 @@ ResNet-50 做迁移学习对照，配套一个 Electron 桌面端可视化应用
 
 ---
 
+## 界面预览
+
+![Terravision 数据看板](screenshots/01-dashboard.png)
+
+| 模型性能对比 | 单图预测（ResNet-50） | 单图预测（Custom CNN） |
+| :---: | :---: | :---: |
+| ![模型对比](screenshots/02-model-comparison.png) | ![ResNet-50 预测](screenshots/03-single-prediction-resnet50.png) | ![Custom CNN 预测](screenshots/04-single-prediction-custom-cnn.png) |
+
+> ▶ [**查看完整演示视频（5 分钟）**](demo/terravision-demo.mp4) —— 模型对比 → 数据看板 → 单图预测全流程。
+
 ## 项目背景
 
 遥感图像与普通照片最大的区别是：**一张图里往往同时包含多种地物**。
